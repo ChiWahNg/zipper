@@ -86,6 +86,26 @@ bool CDirEntry::exist(const std::string & path)
 #endif
 }
 
+bool CDirEntry::exist(const std::wstring& fileName)
+{
+#ifdef WIN32
+    struct _stat stFileInfo;
+    // Attempt to get the file attributes
+    int intStat = _wstat(fileName.c_str(), &stFileInfo);
+    if (intStat == 0) {
+        return true;
+    }
+    else {
+        return false;
+    }
+#else
+// assume we are using c++ 17...
+#include <filesystem>
+    std::filesystem::path p(fileName);
+    return std::filesystem::exists(p);
+#endif
+}
+
 bool CDirEntry::isReadable(const std::string & path)
 {return (access(path.c_str(), 0x4) == 0);}
 

@@ -51,6 +51,13 @@ namespace zipper
     static bool exist(const std::string & path);
 
     /**
+    * Check whether the directory entry specified by 'path' exists.
+    * @param const std::string & path
+    * @return bool exist
+    */
+    static bool exist(const std::wstring& path);
+
+    /**
      * Check whether the directory entry specified by 'path' is
      * is readable.
      * @param const std::string & path

@@ -18,7 +18,9 @@ namespace zipper {
     Unzipper(std::istream& buffer);
     Unzipper(std::vector<unsigned char>& buffer);
     Unzipper(const std::string& zipname);
+    Unzipper(const std::wstring& zipname);
     Unzipper(const std::string& zipname, const std::string& password);
+    Unzipper(const std::wstring& zipname, const std::string& password);
 
     ~Unzipper();
 
@@ -36,6 +38,7 @@ namespace zipper {
     void release();
     std::string m_password;
     std::string m_zipname;
+    std::wstring m_zipnameW;
     std::istream& m_ibuffer;
     std::vector<unsigned char>& m_vecbuffer;
     bool m_usingMemoryVector;

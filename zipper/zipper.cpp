@@ -52,6 +52,31 @@ namespace zipper {
 			return NULL != m_zf;
 		}
 
+		bool initFile(const std::wstring& filename)
+		{
+#ifdef USEWIN32IOAPI
+			zlib_filefunc64_def ffunc = { 0 };
+#endif
+
+			int mode = 0;
+			int flags = Zipper::Append;
+
+			/* open the zip file for output */
+			if (checkFileExists(filename))
+				mode = (flags & Zipper::Overwrite) ? APPEND_STATUS_CREATE : APPEND_STATUS_ADDINZIP;
+			else
+				mode = APPEND_STATUS_CREATE;
+
+#ifdef USEWIN32IOAPI
+			fill_win32_filefunc64W(&ffunc);
+			m_zf = zipOpen2_64(filename.c_str(), mode, NULL, &ffunc);
+#else
+			m_zf = zipOpen64(filename.c_str(), mode);
+#endif
+
+			return NULL != m_zf;
+		}
+
 		bool initWithStream(std::iostream& stream)
 		{
 			m_zipmem.grow = 1;
@@ -228,12 +253,45 @@ namespace zipper {
 		m_open = true;
 	}
 
+	Zipper::Zipper(const std::wstring& zipname)
+		: m_obuffer(*(new std::stringstream())) //not used but using local variable throws exception
+		, m_vecbuffer(*(new std::vector<unsigned char>())) //not used but using local variable throws exception
+		, m_usingMemoryVector(false)
+		, m_usingStream(false)
+		, m_zipnameW(zipname)
+		, m_impl(new Impl(*this))
+	{
+		if (!m_impl->initFile(zipname))
+		{
+			release();
+			throw EXCEPTION_CLASS("Error creating zip in file!");
+		}
+		m_open = true;
+	}
+
 	Zipper::Zipper(const std::string& zipname, const std::string& password)
 		: m_obuffer(*(new std::stringstream())) //not used but using local variable throws exception
 		, m_vecbuffer(*(new std::vector<unsigned char>())) //not used but using local variable throws exception
 		, m_usingMemoryVector(false)
 		, m_usingStream(false)
 		, m_zipname(zipname)
+		, m_password(password)
+		, m_impl(new Impl(*this))
+	{
+		if (!m_impl->initFile(zipname))
+		{
+			release();
+			throw EXCEPTION_CLASS("Error creating zip in file!");
+		}
+		m_open = true;
+	}
+
+	Zipper::Zipper(const std::wstring& zipname, const std::string& password)
+		: m_obuffer(*(new std::stringstream())) //not used but using local variable throws exception
+		, m_vecbuffer(*(new std::vector<unsigned char>())) //not used but using local variable throws exception
+		, m_usingMemoryVector(false)
+		, m_usingStream(false)
+		, m_zipnameW(zipname)
 		, m_password(password)
 		, m_impl(new Impl(*this))
 	{

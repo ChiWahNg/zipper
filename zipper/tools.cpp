@@ -61,6 +61,11 @@ namespace zipper {
     return CDirEntry::exist(filename);
   }
 
+  bool checkFileExists(const std::wstring& filename) 
+  {
+      return CDirEntry::exist(filename);
+  }
+
   bool makedir(const std::string& newdir)
   {
     return CDirEntry::createDir(newdir);

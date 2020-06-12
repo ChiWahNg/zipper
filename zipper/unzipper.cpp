@@ -364,6 +364,18 @@ namespace zipper {
       return m_zf != NULL;
     }
 
+    bool initFile(const std::wstring& filename)
+    {
+#ifdef USEWIN32IOAPI
+        zlib_filefunc64_def ffunc;
+        fill_win32_filefunc64W(&ffunc);
+        m_zf = unzOpen2_64(filename.c_str(), &ffunc);
+#else
+        m_zf = unzOpen64(filename.c_str());
+#endif
+        return m_zf != NULL;
+    }
+
     bool initWithStream(std::istream& stream)
     {
       stream.seekg(0, std::ios::end);
@@ -516,6 +528,39 @@ namespace zipper {
       }
 
     m_open = true;
+  }
+
+  Unzipper::Unzipper(const std::wstring& zipname) 
+      : m_ibuffer(*(new std::stringstream())) //not used but using local variable throws exception
+      , m_vecbuffer(*(new std::vector<unsigned char>())) //not used but using local variable throws exception
+      , m_zipnameW(zipname)
+      , m_usingMemoryVector(false)
+      , m_usingStream(false)
+      , m_impl(new Impl(*this))
+  {
+      if (!m_impl->initFile(zipname))
+      {
+          release();
+          throw EXCEPTION_CLASS("Error loading zip file!");
+      }
+      m_open = true;
+  }
+
+  Unzipper::Unzipper(const std::wstring& zipname, const std::string& password) 
+      : m_ibuffer(*(new std::stringstream())) //not used but using local variable throws exception
+      , m_vecbuffer(*(new std::vector<unsigned char>())) //not used but using local variable throws exception
+      , m_zipnameW(zipname)
+      , m_password(password)
+      , m_usingMemoryVector(false)
+      , m_usingStream(false)
+      , m_impl(new Impl(*this))
+  {
+      if (!m_impl->initFile(zipname))
+      {
+          release();
+          throw EXCEPTION_CLASS("Error loading zip file!");
+      }
+      m_open = true;
   }
 
   Unzipper::Unzipper(const std::string& zipname, const std::string& password)
