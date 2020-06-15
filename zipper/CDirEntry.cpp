@@ -99,10 +99,16 @@ bool CDirEntry::exist(const std::wstring& fileName)
         return false;
     }
 #else
-// assume we are using c++ 17...
-#include <filesystem>
-    std::filesystem::path p(fileName);
-    return std::filesystem::exists(p);
+// hack for none windows
+    FILE* file = NULL;
+    file = fopen(fileName.c_str(), "r");
+    if (!file) {
+        return false;
+    }
+    else {
+        close(file);
+        return true;
+    }
 #endif
 }
 
